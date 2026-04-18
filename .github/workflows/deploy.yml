@@ -39,7 +39,7 @@ jobs:
           script: |
             set -e
 
-            APP_DIR="/home/deploy/app"   # ← Change to your app directory
+            APP_DIR="/home/deploy/mkelite-backend"   # ← Change to your app directory
 
             echo "📦 Pulling latest code..."
             cd $APP_DIR
