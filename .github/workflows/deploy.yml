@@ -22,12 +22,9 @@ jobs:
           node-version: '20'          # Match your EC2 Node version
           cache: 'npm'
 
-      # ── 3. Install & Test ─────────────────────────────────────────
+      # ── 3. Install Dependencies ───────────────────────────────────
       - name: Install dependencies
         run: npm ci
-
-      - name: Run tests                # Remove if no tests yet
-        run: npm test --if-present
 
       # ── 4. Deploy to EC2 via SSH ──────────────────────────────────
       - name: Deploy to EC2
@@ -39,7 +36,7 @@ jobs:
           script: |
             set -e
 
-            APP_DIR="/home/deploy/mkelite-backend"   # ← Change to your app directory
+            APP_DIR="/home/deploy/mkelite-backend"
 
             echo "📦 Pulling latest code..."
             cd $APP_DIR
@@ -49,7 +46,7 @@ jobs:
             npm ci --omit=dev
 
             echo "🔄 Restarting app with PM2..."
-            pm2 reload my-backend --update-env   # ← Match your PM2 app name
+            pm2 reload mkelite-backend --update-env
 
             echo "✅ Deployment complete!"
 
@@ -59,6 +56,6 @@ jobs:
         env:
           DISTRIBUTION: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
           PATHS: "/*"
-          AWS_REGION: "us-east-1"        # ← Change to your region
+          AWS_REGION: "ap-south-1"        # ← Change to your region
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
