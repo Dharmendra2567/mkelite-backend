@@ -18,7 +18,8 @@ exports.getJobs = async (request, reply) => {
 
 // GET /jobs/:id
 exports.getJob = async (request, reply) => {
-    const job = await jobService.getJobById(request.params.id);
+    const userId = request.user ? request.user.id : null;
+    const job = await jobService.getJobById(request.params.id, userId);
     return {
         success: true,
         message: 'Job details retrieved successfully',
@@ -34,26 +35,29 @@ exports.createJob = async (request, reply) => {
         throw new ErrorResponse('Only employers and admins can create jobs', 403);
     }
 
-    const { employerProfileId, ...jobData } = request.body;
+    const { employerProfileId, employerId: bodyEmployerId, ...jobData } = request.body;
 
-    // Validate that the employerProfileId exists
-    if (!employerProfileId) {
-        throw new ErrorResponse('employerProfileId is required to create a job', 400);
-    }
+    let jobOwnerId;
+    if (employerProfileId) {
+        const profile = await EmployerProfile.findById(employerProfileId);
+        if (!profile) {
+            throw new ErrorResponse('Employer profile not found', 404);
+        }
 
-    const profile = await EmployerProfile.findById(employerProfileId);
-    if (!profile) {
-        throw new ErrorResponse('Employer profile not found', 404);
-    }
-
-    // Non-admins can only post under their own profile
-    if (role !== 'admin' && profile.userId.toString() !== userId) {
-        throw new ErrorResponse('You are not authorized to post jobs for this company profile', 403);
+        // Non-admins can only post under their own profile
+        if (role !== 'admin' && profile.userId.toString() !== userId) {
+            throw new ErrorResponse('You are not authorized to post jobs for this company profile', 403);
+        }
+        
+        jobOwnerId = (role === 'admin') ? (bodyEmployerId || profile.userId) : userId;
+    } else {
+        // If no profile, it's just a generic job post. Admin can still assign an owner.
+        jobOwnerId = (role === 'admin') ? (bodyEmployerId || userId) : userId;
     }
 
     const job = await jobService.createJob(
         { ...jobData, employerProfileId },
-        userId // still track which user created the job
+        jobOwnerId
     );
 
     reply.status(201).send({
@@ -76,7 +80,16 @@ exports.updateJob = async (request, reply) => {
         throw new ErrorResponse('Not authorized to update this job', 403);
     }
 
-    const updated = await jobService.updateJob(request.params.id, request.body);
+    // If admin is updating, and it's a company profile change, ensure the employerId follows the new profile
+    const updates = { ...request.body };
+    if (request.user.role === 'admin' && updates.employerProfileId) {
+        const profile = await EmployerProfile.findById(updates.employerProfileId);
+        if (profile) {
+            updates.employerId = profile.userId;
+        }
+    }
+
+    const updated = await jobService.updateJob(request.params.id, updates);
 
     return {
         success: true,

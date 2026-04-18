@@ -46,11 +46,12 @@ const employerLeadRoutes = require('./modules/employer-lead/employer-lead.routes
 const orderRoutes = require('./modules/order/order.routes');
 const placementRoutes = require('./modules/placement/placement.routes');
 const uploadRoutes = require('./modules/upload/upload.routes');
+const imageRoutes = require('./modules/image/image.routes');
 
-app.register(userRoutes, { prefix: '/api/v1/auth' }); // Maintaining /auth for backwards compatibility
 app.register(jobseekerRoutes, { prefix: '/api/v1/jobseeker' });
+app.register(userRoutes, { prefix: '/api/v1/auth' }); 
 app.register(employerRoutes, { prefix: '/api/v1/employer' });
-app.register(employerRoutes, { prefix: '/api/v1/employer-profiles' }); // used by frontend dropdowns
+app.register(employerRoutes, { prefix: '/api/v1/employer-profiles' }); 
 app.register(jobRoutes, { prefix: '/api/v1/jobs' });
 app.register(globalApplicationRoutes, { prefix: '/api/v1/applications' });
 
@@ -60,10 +61,11 @@ app.register(employerLeadRoutes, { prefix: '/api/v1/employer-leads' });
 app.register(orderRoutes, { prefix: '/api/v1/orders' });
 app.register(placementRoutes, { prefix: '/api/v1/placements' });
 app.register(uploadRoutes, { prefix: '/api/v1/upload' });
+app.register(imageRoutes, { prefix: '/api/v1/images' });
 
 // Health check
 app.get('/api/health', async (request, reply) => {
-    return { success: true, message: 'Server is healthy' };
+    return { success: true, message: 'Server is healthy - RELOADED' };
 });
 
 // Global error handler

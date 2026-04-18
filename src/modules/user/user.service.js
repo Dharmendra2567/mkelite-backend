@@ -58,15 +58,25 @@ class UserService {
     }
 
     async adminUpdateUser(id, details) {
-        const user = await User.findByIdAndUpdate(id, details, {
-            new: true,
-            runValidators: true
-        }).lean();
+        let user = await User.findById(id).select('+password');
 
         if (!user) {
             throw new ErrorResponse('User not found', 404);
         }
-        return user;
+
+        // Update fields manually to trigger .save() hooks (important for password hashing)
+        Object.keys(details).forEach(key => {
+            if (details[key] !== undefined) {
+                user[key] = details[key];
+            }
+        });
+
+        await user.save();
+        
+        // Remove password from returned object
+        const result = user.toObject();
+        delete result.password;
+        return result;
     }
 
     async deleteUser(id) {

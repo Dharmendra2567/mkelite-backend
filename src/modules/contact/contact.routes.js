@@ -1,4 +1,4 @@
-const { createInquiry, getInquiries, updateStatus } = require('./contact.controller');
+const { createInquiry, getInquiries, updateStatus, convertToUser } = require('./contact.controller');
 const { protect, authorize } = require('../../middlewares/auth');
 
 const inquirySchema = {
@@ -44,6 +44,7 @@ async function contactRoutes(fastify, options) {
     // Protected admin routes for reviewing
     fastify.get('/', { preHandler: [protect, authorize('admin')] }, getInquiries);
     fastify.put('/:id/status', { schema: statusSchema.schema, preHandler: [protect, authorize('admin')] }, updateStatus);
+    fastify.post('/:id/convert', { preHandler: [protect, authorize('admin')] }, convertToUser);
 }
 
 module.exports = contactRoutes;

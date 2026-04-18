@@ -1,10 +1,14 @@
 const app = require('./app');
+// Triggering server reload for new route registration
 const connectDB = require('./config/db');
 const seedCategories = require('./modules/category/category.seed');
 
 // Connect to database
 const startServer = async () => {
     await connectDB();
+    
+    // Removed temporary index drop scripts
+
     await seedCategories();
 };
 

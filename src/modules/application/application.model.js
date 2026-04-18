@@ -33,6 +33,6 @@ const ApplicationSchema = new mongoose.Schema({
 });
 
 // We can no longer have a strict unique index on just (jobId, jobseekerId) because guests will have nullable jobseekerId!
-ApplicationSchema.index({ jobId: 1, email: 1 });
+ApplicationSchema.index({ jobId: 1, email: 1 }, { unique: true });
 
 module.exports = mongoose.model('Application', ApplicationSchema);

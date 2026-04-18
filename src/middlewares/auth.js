@@ -18,7 +18,7 @@ exports.protect = async (request, reply) => {
     }
 
     try {
-        const decoded = request.server.jwt.verify(token);
+        const decoded = request.server.jwt.verify(token); //using fastify jwt pluggin
         request.user = await User.findById(decoded.id);
         if (!request.user) {
             throw new ErrorResponse('User not found', 404);
@@ -42,4 +42,28 @@ exports.authorize = (...roles) => {
             );
         }
     };
+};
+
+exports.optionalProtect = async (request, reply) => {
+    let token;
+
+    if (
+        request.headers.authorization &&
+        request.headers.authorization.startsWith('Bearer')
+    ) {
+        token = request.headers.authorization.split(' ')[1];
+    } else if (request.cookies?.token) {
+        token = request.cookies.token;
+    }
+
+    if (!token) {
+        return;
+    }
+
+    try {
+        const decoded = request.server.jwt.verify(token);
+        request.user = await User.findById(decoded.id);
+    } catch (err) {
+        // Fallback silently if token is invalid
+    }
 };

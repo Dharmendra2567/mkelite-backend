@@ -1,5 +1,5 @@
 const { getJobs, getJob, createJob, updateJob, deleteJob } = require('./job.controller');
-const { protect, authorize } = require('../../middlewares/auth');
+const { protect, authorize, optionalProtect } = require('../../middlewares/auth');
 
 const createJobSchema = {
     schema: {
@@ -9,6 +9,7 @@ const createJobSchema = {
             properties: {
                 title: { type: 'string' },
                 employerProfileId: { type: 'string' }, // ObjectId as string
+                employerId: { type: 'string' }, // Fix: Allow explicit employerId from admin payload
 
                 location: {
                     type: 'object',
@@ -96,7 +97,7 @@ async function jobRoutes(fastify, options) {
     fastify.register(require('../application/application.routes'), { prefix: '/:jobId/applications' });
 
     fastify.get('/', getJobs);
-    fastify.get('/:id', getJob);
+    fastify.get('/:id', { preHandler: [optionalProtect] }, getJob);
     fastify.post('/', { schema: createJobSchema.schema, preHandler: [protect, authorize('employer')] }, createJob);
     fastify.put('/:id', { preHandler: [protect, authorize('employer')] }, updateJob);
     fastify.delete('/:id', { preHandler: [protect, authorize('employer')] }, deleteJob);

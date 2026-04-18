@@ -16,26 +16,45 @@ const OrderSchema = new mongoose.Schema({
     },
     candidatesNeeded: {
         type: Number,
-        required: true,
+        required: [true, 'Please specify how many candidates are needed'],
         min: 1
     },
-    candidatesFound: [{
-        type: mongoose.Schema.ObjectId,
-        ref: 'User'
-    }],
-    paymentStatus: {
-        type: String,
-        enum: ['Paid', 'Pending'],
-        default: 'Pending'
-    },
-    orderStatus: {
-        type: String,
-        enum: ['Placed', 'Pending', 'Fulfilled'],
-        default: 'Placed'
+    deadline: {
+        type: Date,
+        required: [true, 'Please provide a deadline']
     },
     totalAmount: {
-        type: String, // String or Decimal depending on preference for exact currency representation
-        required: true
+        type: Number,
+        required: [true, 'Please provide the total amount'],
+        default: 0
+    },
+    jobId: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'Job',
+        required: [true, 'Please provide the Job ID']
+    },
+    acquiredCandidates: [{
+        jobseekerId: {
+            type: mongoose.Schema.ObjectId,
+            ref: 'User'
+        },
+        applicationId: {
+            type: mongoose.Schema.ObjectId,
+            ref: 'Application'
+        },
+        acquiredAt: {
+            type: Date,
+            default: Date.now
+        }
+    }],
+    orderStatus: {
+        type: String,
+        enum: ['Pending', 'Active', 'Successful', 'Rejected', 'Cancelled'],
+        default: 'Pending'
+    },
+    message: {
+        type: String,
+        maxLength: [1000, 'Message cannot be longer than 1000 characters']
     }
 }, {
     timestamps: true

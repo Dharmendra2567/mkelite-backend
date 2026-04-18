@@ -30,32 +30,36 @@ exports.uploadFile = async (request, reply) => {
     const fileName = `${crypto.randomBytes(16).toString('hex')}${ext}`;
     const bucketName = process.env.AWS_BUCKET_NAME;
 
+    // Support for folders (e.g., ?folder=resume)
+    const folder = request.query.folder ? `${request.query.folder}/` : '';
+    const s3Key = `${folder}${fileName}`;
+
     const params = {
         Bucket: bucketName,
-        Key: fileName,
+        Key: s3Key,
         Body: fileBuffer,
         ContentType: data.mimetype,
-        // ACL: 'public-read', // Uncomment if bucket allows public-read ACL
     };
 
     try {
         await s3Client.send(new PutObjectCommand(params));
 
         // Construct public URL (Assuming bucket is public or using CloudFront)
-        // Adjust this based on S3 bucket configuration (e.g., https://bucket.s3.region.amazonaws.com/key)
         const region = process.env.AWS_REGION;
-        const publicUrl = `https://${bucketName}.s3.${region}.amazonaws.com/${fileName}`;
+        const publicUrl = `https://${bucketName}.s3.${region}.amazonaws.com/${s3Key}`;
 
         return {
             success: true,
             data: {
                 fileName,
                 publicUrl,
+                s3Key,
                 mimetype: data.mimetype
             }
         };
     } catch (err) {
         console.error('S3 Upload Error:', err);
-        throw new ErrorResponse('Error uploading file to storage', 500);
+        // Return specific error message for debugging
+        throw new ErrorResponse(`Error uploading file to storage: ${err.message}`, 500);
     }
 };

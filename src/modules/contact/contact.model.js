@@ -16,6 +16,11 @@ const ContactInquirySchema = new mongoose.Schema({
         ]
     },
     phone: { type: String, required: [true, 'Please add a phone number'] },
+    gender: {
+        type: String,
+        enum: ['male', 'female', 'others'],
+        required: [true, 'Please provide your gender']
+    },
     location: { type: String },
     subject: { type: String, required: [true, 'Please add a subject'] },
     message: { type: String, required: [true, 'Please add a message'] },

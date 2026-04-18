@@ -17,8 +17,7 @@ const JobSchema = new mongoose.Schema({
     // 🔹 Company Reference (links to EmployerProfile)
     employerProfileId: {
         type: mongoose.Schema.ObjectId,
-        ref: 'EmployerProfile',
-        required: [true, 'Please link to an employer profile']
+        ref: 'EmployerProfile'
     },
 
     location: {

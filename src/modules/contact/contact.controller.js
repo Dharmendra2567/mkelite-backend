@@ -27,3 +27,16 @@ exports.updateStatus = async (request, reply) => {
         data: inquiry
     };
 };
+
+exports.convertToUser = async (request, reply) => {
+    const user = await contactService.convertToUser(request.params.id);
+    return {
+        success: true,
+        message: 'Contact converted to user successfully',
+        data: {
+            id: user._id,
+            email: user.email,
+            role: user.role
+        }
+    };
+};

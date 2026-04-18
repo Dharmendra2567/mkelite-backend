@@ -22,7 +22,7 @@ class JobService {
     }
 
     _buildQuery(queryOptions) {
-        const { limit, skip, sort, keywords, category, subCategory, type, workMode, isFeatured } = queryOptions;
+        const { limit, skip, sort, keywords, category, subCategory, type, workMode, isFeatured, employerId, employerProfileId } = queryOptions;
         const mongoQuery = {};
 
         if (keywords) {
@@ -38,6 +38,8 @@ class JobService {
         if (type) mongoQuery.type = type;
         if (workMode) mongoQuery.workMode = workMode;
         if (isFeatured !== undefined) mongoQuery.isFeatured = isFeatured === 'true';
+        if (employerId) mongoQuery.employerId = employerId;
+        if (employerProfileId) mongoQuery.employerProfileId = employerProfileId;
 
         return mongoQuery;
     }
@@ -74,7 +76,7 @@ class JobService {
         return jobs;
     }
 
-    async getJobById(id) {
+    async getJobById(id, userId = null) {
         let query = {};
         if (mongoose.Types.ObjectId.isValid(id)) {
             query._id = id;
@@ -86,6 +88,21 @@ class JobService {
             .populate('employerProfileId', 'companyName logo coverImage location industry companySize website contactInfo hrDetails socialLinks benefits tags')
             .populate('employerId', 'firstName lastName email')
             .lean();
+
+        // Check if user already applied
+        if (job && userId) {
+            const Application = require('../application/application.model');
+            const application = await Application.findOne({ 
+                jobId: job._id, 
+                jobseekerId: userId 
+            }).select('_id status').lean();
+            
+            job.isApplied = !!application;
+            if (application) {
+                job.applicationStatus = application.status;
+                job.applicationId = application._id;
+            }
+        }
 
         // Lazy Migration if jobId is missing
         if (job && !job.jobId) {

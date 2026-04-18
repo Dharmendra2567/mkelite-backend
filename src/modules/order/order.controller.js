@@ -37,10 +37,40 @@ exports.getAllOrders = async (request, reply) => {
 };
 
 exports.updateOrderStatus = async (request, reply) => {
-    const order = await orderService.updateOrderStatus(request.params.id, request.body);
+    const order = await orderService.updateOrderStatus(request.params.id, request.body, request.user.role);
     return {
         success: true,
-        message: `Order status updated to ${request.body.status || 'updated'}`,
+        message: `Order status updated successfully`,
+        data: order
+    };
+};
+
+exports.activateOrder = async (request, reply) => {
+    // Force status to Active for employer activation
+    const order = await orderService.updateOrderStatus(request.params.id, { orderStatus: 'Active' }, 'employer');
+    return {
+        success: true,
+        message: 'Order activated successfully',
+        data: order
+    };
+};
+
+exports.acquireCandidate = async (request, reply) => {
+    const { applicationId } = request.body;
+    const order = await orderService.acquireCandidate(applicationId, request.user.id);
+    return {
+        success: true,
+        message: 'Candidate acquired successfully',
+        data: order
+    };
+};
+
+exports.removeCandidate = async (request, reply) => {
+    const { applicationId } = request.params;
+    const order = await orderService.removeCandidate(applicationId, request.user.id);
+    return {
+        success: true,
+        message: 'Candidate removed from order successfully',
         data: order
     };
 };
