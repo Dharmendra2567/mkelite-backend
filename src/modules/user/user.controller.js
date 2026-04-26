@@ -22,8 +22,8 @@ exports.login = async (request, reply) => {
 
     const user = await userService.findUserByEmailWithPassword(email);
 
-    if (!user) {
-        throw new ErrorResponse('Invalid credentials', 401);
+    if (!user || !user.isActive) {
+        throw new ErrorResponse('Invalid credentials or account is suspended', 401);
     }
 
     const isMatch = await user.matchPassword(password);
@@ -103,7 +103,7 @@ exports.updateDetails = async (request, reply) => {
 };
 
 exports.getEmployers = async (request, reply) => {
-    const employers = await User.find({ role: 'employer' }).select('firstName lastName email phoneNumber');
+    const employers = await User.find({ role: 'employer', isActive: true }).select('firstName lastName email phoneNumber');
     return {
         success: true,
         message: 'Employers retrieved successfully',

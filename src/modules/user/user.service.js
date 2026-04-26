@@ -53,7 +53,7 @@ class UserService {
     }
 
     // Add other robust user operations here (update, delete, etc.)
-    async findAllUsers(filter = {}) {
+    async findAllUsers(filter = { isActive: true }) {
         return await User.find(filter).sort({ createdAt: -1 }).lean();
     }
 
@@ -80,10 +80,27 @@ class UserService {
     }
 
     async deleteUser(id) {
-        const user = await User.findByIdAndDelete(id);
+        const user = await User.findById(id);
         if (!user) {
             throw new ErrorResponse('User not found', 404);
         }
+
+        // Soft delete user
+        user.isActive = false;
+        await user.save();
+
+        // Deactivate corresponding profile
+        if (user.role === 'jobseeker') {
+            const JobseekerProfile = require('../jobseeker/jobseeker.model');
+            await JobseekerProfile.findOneAndUpdate({ user: user._id }, { status: 'Inactive' });
+        } else if (user.role === 'employer') {
+            const EmployerProfile = require('../employer/employer.model');
+            await EmployerProfile.findOneAndUpdate({ userId: user._id }, { status: 'Inactive' });
+            
+            const Job = require('../job/job.model');
+            await Job.updateMany({ employerId: user._id }, { status: 'Inactive' });
+        }
+
         return user;
     }
 

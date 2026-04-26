@@ -22,8 +22,15 @@ class JobService {
     }
 
     _buildQuery(queryOptions) {
-        const { limit, skip, sort, keywords, category, subCategory, type, workMode, isFeatured, employerId, employerProfileId } = queryOptions;
+        const { limit, skip, sort, keywords, category, subCategory, type, workMode, isFeatured, employerId, employerProfileId, status } = queryOptions;
         const mongoQuery = {};
+
+        // Default to showing only Active jobs unless specified
+        if (status) {
+            mongoQuery.status = status;
+        } else {
+            mongoQuery.status = 'Active';
+        }
 
         if (keywords) {
             mongoQuery.$or = [

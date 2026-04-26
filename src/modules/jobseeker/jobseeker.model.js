@@ -148,6 +148,13 @@ const JobseekerSchema = new mongoose.Schema({
     profileCompletion: {
         type: Number,
         default: 0
+    },
+
+    // 🔹 Status Control (Admin Use)
+    status: {
+        type: String,
+        enum: ['Active', 'Inactive', 'Blocked'],
+        default: 'Active'
     }
 
 }, {

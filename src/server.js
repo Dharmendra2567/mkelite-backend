@@ -9,7 +9,7 @@ const startServer = async () => {
     
     // Removed temporary index drop scripts
 
-    await seedCategories();
+    // await seedCategories();
 };
 
 startServer();
